@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Happysexmap — Versão 10.0 Partilha Corrigida</title>
+<style>
+:root{--pink:#ff3f6c;--blue:#2878ee;--ink:#17233b;--muted:#718096;--bg:#f6f8fc;--card:#fff;--line:#e7ebf2}
+*{box-sizing:border-box}body{margin:0;background:#dfe5ee;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+.app{width:min(430px,100vw);height:100dvh;margin:auto;background:var(--bg);overflow:hidden;position:relative;box-shadow:0 0 40px #0002}
+.screen{display:none;height:100%;flex-direction:column}.screen.active{display:flex}
+.top{padding:18px 18px 10px;background:#fff;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.top h1{font-size:20px;margin:0}.back{border:0;background:none;font-size:24px}.content{padding:18px;overflow:auto;flex:1}
+.logo{font-size:42px;width:150px;height:150px;border-radius:34px;background:#fff0f4;display:grid;place-items:center;margin:20px auto 14px}.heart-map-logo{width:130px;height:130px;display:block}.brand{text-align:center;font-size:28px;font-weight:800}.tag{text-align:center;color:var(--pink);margin:8px 25px 28px}
+.welcome-signature{position:absolute;right:12px;bottom:8px;font-size:9px;font-weight:700;letter-spacing:1.2px;color:#000;opacity:.75}
+.btn{border:0;border-radius:14px;padding:14px 16px;font-weight:750;font-size:15px;cursor:pointer}.primary{background:var(--pink);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}.full{width:100%;margin-top:12px}
+.input{width:100%;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:6px 0 10px;font-size:15px}.label{font-size:12px;font-weight:750;color:#526074;margin-top:8px}
+.map{position:relative;flex:1;min-height:0;overflow:hidden;background:#d8eee1}
+.empty{text-align:center;color:var(--muted);padding:50px 15px}
+#realMap{position:absolute;inset:0;z-index:1;background:#d8eee1}
+#mapLoadStatus{position:absolute;z-index:3;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:35px;color:#526074;background:#eef4f1;font-weight:700}
+#realMap .leaflet-control-attribution{font-size:8px}
+#realMap .leaflet-control-zoom{margin-right:10px;margin-bottom:10px}
+.real-pin{font-size:24px;line-height:32px;text-align:center;background:transparent;border:0}
+.map-overlay{position:absolute;inset:0;z-index:5;pointer-events:none}
+.map-overlay>*{pointer-events:auto}
+.search{position:absolute;z-index:6;top:16px;left:16px;right:16px;background:#fff;border-radius:14px;padding:13px 16px;box-shadow:0 4px 18px #0002;color:#718096;display:flex;align-items:center;gap:8px}
+.search input{border:0;outline:0;width:100%;font:inherit;background:transparent;color:var(--ink)}
+.search button{border:0;background:none;color:var(--muted);font-size:18px}
+.search-results{position:absolute;z-index:8;top:74px;left:16px;right:16px;background:#fff;border-radius:14px;box-shadow:0 6px 22px #0002;overflow:hidden;display:none}
+.search-results.show{display:block}
+.search-result{padding:12px 14px;border-bottom:1px solid var(--line)}
+.search-result b{display:block}.search-result small{color:var(--muted)}
+.map-tools{position:absolute;z-index:7;right:18px;bottom:22px;display:grid;gap:8px}
+.map-tools button{width:44px;height:44px;border:0;border-radius:13px;background:#fff;font-size:22px;box-shadow:0 4px 14px #0002}
+.map-hint{position:absolute;z-index:6;left:16px;bottom:18px;background:#fff;padding:9px 12px;border-radius:12px;box-shadow:0 3px 14px #0002;font-size:12px;font-weight:700}
+.plus{position:absolute;z-index:7;right:11px;bottom:22px;width:58px;height:58px;border:0;border-radius:50%;background:var(--blue);color:white;font-size:30px;box-shadow:0 8px 18px #0003}
+#mapPulse{position:absolute;z-index:6;width:18px;height:18px;border-radius:50%;background:#2878ee55;border:2px solid #2878ee;transform:translate(-50%,-50%);display:none;pointer-events:none}
+.map-pin-custom{position:absolute;z-index:4;width:42px;height:42px;border-radius:50% 50% 50% 0;transform:translate(-50%,-100%) rotate(-45deg);background:var(--pink);display:grid;place-items:center;box-shadow:0 4px 10px #0003;cursor:pointer;border:0}
+.map-pin-custom span{transform:rotate(45deg);font-size:19px}
+.map-pin-custom.blue{background:var(--blue)}
+.coords{font-size:12px;color:var(--muted);background:#f7f9fc;border-radius:10px;padding:10px;margin-top:5px}
+.file-label{display:block;text-align:center;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;margin-top:6px;cursor:pointer;font-weight:700}
+.file-label input{display:none}.preview{max-height:150px;max-width:100%;border-radius:12px;margin-top:8px;display:none}
+ .search{display:flex;align-items:center;gap:8px}.search input{border:0;outline:0;width:100%;font:inherit;background:transparent;color:var(--ink)}.search button{border:0;background:none;color:var(--muted);font-size:18px}.map-tools{position:absolute;z-index:5;right:18px;bottom:92px;display:grid;gap:8px}.map-tools button{width:44px;height:44px;border:0;border-radius:13px;background:#fff;font-size:22px;box-shadow:0 4px 14px #0002}.search-results{position:absolute;z-index:8;top:74px;left:16px;right:16px;background:#fff;border-radius:14px;box-shadow:0 6px 22px #0002;overflow:hidden;display:none}.search-results.show{display:block}.search-result{padding:12px 14px;border-bottom:1px solid var(--line)}.search-result b{display:block}.search-result small{color:var(--muted)}.zoom1{transform:scale(1.08)}.zoom2{transform:scale(1.16)}
+
+.map{cursor:crosshair}.map .pin{cursor:pointer}
+.map-hint{position:absolute;z-index:6;left:16px;bottom:18px;background:#fff;padding:9px 12px;border-radius:12px;box-shadow:0 3px 14px #0002;font-size:12px;font-weight:700}
+.coords{font-size:12px;color:var(--muted);background:#f7f9fc;border-radius:10px;padding:10px;margin-top:5px}
+.file-label{display:block;text-align:center;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;margin-top:6px;cursor:pointer;font-weight:700}
+.file-label input{display:none}
+.preview{max-height:150px;max-width:100%;border-radius:12px;margin-top:8px;display:none}
+
+/* v4 */
+.map-pin-custom{position:absolute;z-index:4;width:42px;height:42px;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);background:var(--pink);display:grid;place-items:center;
+  box-shadow:0 4px 10px #0003;cursor:pointer;border:0}
+.map-pin-custom span{transform:rotate(45deg);font-size:19px}
+.map-pin-custom.blue{background:var(--blue)}
+.map-pulse{position:absolute;z-index:2;width:18px;height:18px;border-radius:50%;
+  background:#2878ee55;border:2px solid #2878ee;transform:translate(-50%,-50%);display:none}
+.coord-actions{display:flex;gap:8px;margin-top:8px}.coord-actions .btn{flex:1;padding:10px}
+.marker-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;margin-top:10px}
+.small-actions{display:flex;gap:8px;margin-top:10px}.small-actions .btn{flex:1;padding:10px}
+
+/* v5 UI fixes */
+.bottom{height:calc(68px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid var(--line);z-index:20}
+.nav{border:0;background:#fff;color:#718096;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.nav b{font-size:20px;line-height:20px}.nav.active{color:var(--pink)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #00000008}
+.row{display:flex;align-items:center;gap:12px}.grow{flex:1}.title{font-weight:800}.muted{color:var(--muted);font-size:13px}
+.avatar{width:42px;height:42px;border-radius:50%;background:#fff0f4;display:grid;place-items:center;font-weight:800}
+.badge{font-size:10px;font-weight:800;background:#f0f2f5;padding:5px 7px;border-radius:8px}
+.link{text-align:center;color:var(--blue);font-size:12px;line-height:1.45}
+.modal{position:fixed;inset:0;background:#0006;z-index:100;display:none;align-items:flex-end}
+.modal.show{display:flex}.sheet{width:min(430px,100vw);max-height:88vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:20px}
+.sheet h2{margin:0 0 12px}.symbols{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 12px}
+.symbol{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 4px;font-size:24px}
+.symbol.selected{border:2px solid var(--pink);background:#fff0f4}.symbol small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.choice{display:block;padding:9px 0;font-size:14px}.danger{color:#c53030}
+.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);z-index:200;background:#17233b;color:#fff;padding:10px 14px;border-radius:12px;font-size:13px;display:none;max-width:90%;text-align:center}
+.toast.show{display:block}
+#customPins{position:absolute;inset:0;pointer-events:none;z-index:4}
+#realMap{z-index:1}
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+  #realMap .leaflet-control-attribution{font-size:8px}
+  .real-pin{font-size:24px;line-height:32px;text-align:center}
+</style>
+
+
+<style>
+  .online-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#a0aec0;margin-right:6px}
+  .online-dot.on{background:#2fb344}
+  .account-note{font-size:12px;color:#718096;line-height:1.45;margin-top:8px}
+  .sync-card{display:flex;align-items:center;gap:10px}
+
+  .premium-card{background:linear-gradient(135deg,#fff7d6,#fff);border:1px solid #f0d36b}.premium-pill{display:inline-block;background:#17233b;color:#fff;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}.plan-row{display:flex;justify-content:space-between;align-items:center;gap:12px}.locked{opacity:.55}.premium-price{text-align:center;font-size:30px;font-weight:900;margin:10px 0}.premium-price small{font-size:13px;color:var(--muted);font-weight:600}.feature-list{line-height:2;margin:10px 0;padding-left:4px;list-style:none}.feature-list li:before{content:'✓ ';color:#2f855a;font-weight:900}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <section id="welcome" class="screen active">
+    <div class="content hero">
+      <div class="logo" aria-label="Mapa em forma de coração"><svg class="heart-map-logo" viewBox="0 0 100 92" xmlns="http://www.w3.org/2000/svg" role="img"><defs><clipPath id="heartClip"><path d="M50 88C42 79 10 57 10 31C10 13 31 4 45 18L50 23L55 18C69 4 90 13 90 31C90 57 58 79 50 88Z"/></clipPath></defs><path d="M50 88C42 79 10 57 10 31C10 13 31 4 45 18L50 23L55 18C69 4 90 13 90 31C90 57 58 79 50 88Z" fill="#fff" stroke="#ff3f6c" stroke-width="6" stroke-linejoin="round"/><g clip-path="url(#heartClip)" fill="none" stroke="#ff3f6c" stroke-width="4" stroke-linecap="round" opacity=".95"><path d="M13 35C28 31 34 39 48 35S72 22 88 28"/><path d="M17 55C31 49 39 56 52 53S72 42 86 47"/><path d="M31 13C27 31 34 46 31 64"/><path d="M59 15C55 31 63 45 59 72"/><path d="M78 19C73 35 80 49 76 61"/></g><circle cx="50" cy="47" r="7" fill="#2878ee"/><circle cx="50" cy="47" r="3" fill="#fff"/></svg></div><div class="brand">Happysexmap</div>
+      <p class="tag">Guarda os lugares que significam algo para ti.</p>
+      <button class="btn primary full" onclick="show('login')">Entrar</button>
+      <button class="btn secondary full" onclick="show('signup')">Criar conta</button>
+      <button class="btn secondary full" onclick="show('map')">Continuar em modo local</button>
+      <p class="link">Versão 10.2 — Gestão de acessos.</p>
+      <div class="welcome-signature">Creating by: HELCAT</div>
+    </div>
+  </section>
+
+  <section id="login" class="screen">
+    <div class="top"><button class="back" onclick="show('welcome')">‹</button><h1>Entrar</h1></div>
+    <div class="content">
+      <div class="label">Email</div><input id="loginEmail" class="input" type="email" placeholder="nome@email.com" autocomplete="email">
+      <div class="label">Palavra-passe</div><input id="loginPassword" class="input" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn primary full" onclick="loginOnline()">Entrar</button>
+      <button class="btn secondary full" onclick="resetPassword()">Esqueci-me da palavra-passe</button>
+      <button class="btn secondary full" onclick="show('signup')">Criar nova conta</button>
+      <p class="account-note">Enquanto o Firebase não estiver configurado, podes continuar a usar a aplicação em modo local.</p>
+    </div>
+  </section>
+
+  <section id="signup" class="screen">
+    <div class="top"><button class="back" onclick="show('welcome')">‹</button><h1>Criar conta</h1></div>
+    <div class="content">
+      <div class="label">Nome</div><input id="name" class="input" placeholder="O teu nome">
+      <div class="label">Email</div><input id="signupEmail" class="input" type="email" placeholder="nome@email.com">
+      <div class="label">Palavra-passe</div><input id="password" class="input" type="password" placeholder="••••••••">
+      <button class="btn primary full" onclick="createOnlineAccount()">Criar conta</button>
+      <button class="btn secondary full" onclick="socialLoginUnavailable('Apple')">Continuar com Apple</button>
+      <button class="btn secondary full" onclick="socialLoginUnavailable('Google')">Continuar com Google</button>
+    </div>
+  </section>
+
+  <section id="map" class="screen">
+    <div class="map" id="mapRoot">
+      <div id="realMap"></div>
+      <div id="mapLoadStatus">A carregar mapa…</div>
+      <div id="customPins"></div>
+      <div id="mapPulse"></div>
+
+      <div class="map-overlay">
+        <div class="search">
+          🔍 <input id="mapSearch" placeholder="Procurar um local" autocomplete="off"
+                    oninput="searchMap(this.value)">
+          <button onclick="clearMapSearch()" aria-label="Limpar">×</button>
+        </div>
+        <div id="searchResults" class="search-results"></div>
+
+        <div class="map-tools">
+          <button id="mapLayerToggle" onclick="toggleMapLayer()" aria-label="Alternar mapa e satélite" title="Mapa / Satélite">🛰️</button>
+          <button onclick="locateUser()" aria-label="A minha localização">⌖</button>
+          <button onclick="zoomMap(1)" aria-label="Aumentar zoom">+</button>
+          <button onclick="zoomMap(-1)" aria-label="Diminuir zoom">−</button>
+        </div>
+
+        <div class="map-hint">Toque no mapa para escolher um local</div>
+        <button class="plus" onclick="openAdd()" aria-label="Adicionar marcador">+</button>
+      </div>
+    </div>
+
+    <nav class="bottom">
+      <button class="nav active" onclick="show('map')"><b>🗺️</b>Mapa</button>
+      <button class="nav" onclick="show('places')"><b>♡</b>Locais</button>
+      <button class="nav" onclick="show('share')"><b>♧</b>Partilha</button>
+      <button class="nav" onclick="show('profile')"><b>♙</b>Perfil</button>
+    </nav>
+  </section>
+
+  <section id="places" class="screen">
+    <div class="top"><h1>Os meus locais</h1></div><div class="content">
+      <div id="placesSummary" class="card" style="margin-bottom:14px"></div>
+      <input class="input" placeholder="🔍  Procurar nos meus locais" oninput="filterPlaces(this.value)">
+      <div id="placesList"></div>
+    </div><nav class="bottom">
+      <button class="nav" onclick="show('map')"><b>🗺️</b>Mapa</button><button class="nav active"><b>♡</b>Locais</button><button class="nav" onclick="show('share')"><b>♧</b>Partilha</button><button class="nav" onclick="show('profile')"><b>♙</b>Perfil</button>
+    </nav>
+  </section>
+
+  <section id="share" class="screen">
+    <div class="top"><h1>Pessoas autorizadas</h1></div><div class="content">
+      <div id="incomingInvites"></div><div id="people"></div>
+      <button class="btn primary full" onclick="openInvite()">＋ Adicionar pessoa</button>
+      <div class="card" style="margin-top:18px" onclick="show('shared')"><div class="row"><span style="font-size:28px">🗺️</span><div class="grow"><div class="title">Mapas partilhados</div><div class="muted">Locais que outras pessoas partilharam contigo</div></div>›</div></div>
+    </div><nav class="bottom"><button class="nav" onclick="show('map')"><b>🗺️</b>Mapa</button><button class="nav" onclick="show('places')"><b>♡</b>Locais</button><button class="nav active"><b>♧</b>Partilha</button><button class="nav" onclick="show('profile')"><b>♙</b>Perfil</button></nav>
+  </section>
+
+  <section id="shared" class="screen">
+    <div class="top"><button class="back" onclick="show('share')">‹</button><h1>Mapas partilhados</h1></div><div class="content">
+      <div id="sharedMapsList"><div class="empty">Ainda não tens mapas partilhados contigo.</div></div>
+    </div>
+  </section>
+
+  <section id="profile" class="screen">
+    <div class="top"><h1>O meu perfil</h1></div><div class="content">
+      <div class="card" style="text-align:center"><div class="avatar" style="margin:auto;width:72px;height:72px">👤</div><h2 id="profileName">Ana Silva</h2><div id="profileEmail" class="muted">Modo local</div></div>
+      <div class="card premium-card" onclick="show('premium')"><div class="plan-row"><div><span id="planBadge" class="premium-pill">FREE</span><div class="title" style="margin-top:8px">O teu plano</div><div id="planText" class="muted">Free — até 20 locais</div></div><div style="font-size:28px">👑</div></div><button class="btn primary full" onclick="event.stopPropagation();show('premium')">Ver Premium</button></div>
+      <div class="card"><div class="row" onclick="toast('Privacidade: tudo privado por defeito')">🔒 <div class="grow">Privacidade</div>›</div></div>
+      <div class="card"><div class="row" onclick="show('share')">👥 <div class="grow">Pessoas autorizadas</div>›</div></div>
+      <div class="card"><div class="row" onclick="toast('Notificações ativas')">🔔 <div class="grow">Notificações</div>›</div></div>
+      <div class="card"><div class="row" onclick="toast('Definições avançadas serão disponibilizadas numa próxima versão')">⚙️ <div class="grow">Definições</div>›</div></div><div class="card"><div class="sync-card"><span id="onlineDot" class="online-dot"></span><div class="grow"><div class="title">Conta e sincronização</div><div id="onlineStatus" class="muted">Modo local</div></div><span id="onlineBadge" class="badge">LOCAL</span></div></div>
+       <button class="btn secondary full" onclick="syncNow()">☁️ Sincronizar agora</button><div class="card"><div class="row" onclick="resetDemoData()">↻ <div class="grow">Repor dados de demonstração</div>›</div></div>
+      <button class="btn secondary full danger" onclick="logoutOnline()">Terminar sessão</button>
+    </div><nav class="bottom"><button class="nav" onclick="show('map')"><b>🗺️</b>Mapa</button><button class="nav" onclick="show('places')"><b>♡</b>Locais</button><button class="nav" onclick="show('share')"><b>♧</b>Partilha</button><button class="nav active"><b>♙</b>Perfil</button></nav>
+  </section>
+
+  <section id="premium" class="screen">
+    <div class="top"><button class="back" onclick="show('profile')">‹</button><h1>Happysexmap Premium</h1></div>
+    <div class="content">
+      <div class="card premium-card" style="text-align:center"><div style="font-size:46px">👑</div><h2 style="margin-bottom:4px">Desbloqueia tudo</h2><div class="muted">Mais liberdade para guardar e partilhar os teus lugares.</div><div class="premium-price">€1,99 <small>/ mês</small></div><div class="muted">ou €14,99 / ano</div></div>
+      <div class="card"><div class="title">FREE</div><ul class="feature-list"><li>Mapa, pesquisa e GPS</li><li>Até 20 locais</li><li>Editar e eliminar locais</li><li>Privacidade “Só eu”</li></ul></div>
+      <div class="card premium-card"><div class="title">PREMIUM 👑</div><ul class="feature-list"><li>Locais ilimitados</li><li>Fotografias nos locais</li><li>Partilha com pessoas autorizadas</li><li>Sincronização na cloud</li><li>Backup entre dispositivos</li><li>Novas funções Premium futuras</li></ul></div>
+      <button id="upgradeBtn" class="btn primary full" onclick="startPremium()">Experimentar Premium</button>
+      <button class="btn secondary full" onclick="restorePremium()">Restaurar compra</button>
+      <p class="link">Pagamento real será ligado na versão publicada através da loja da aplicação.</p>
+    </div>
+  </section>
+
+  <div id="addModal" class="modal"><div class="sheet">
+    <h2>Adicionar marcador <button class="back" style="float:right" onclick="closeModal('addModal')">×</button></h2>
+    <div class="symbols"><button id="art" class="symbol selected" onclick="pick('🥰')">🥰<small>Obra de arte</small></button><button id="good" class="symbol" onclick="pick('😊')">😊<small>Boa experiência</small></button><button id="bad" class="symbol" onclick="pick('😖')">😖<small>Má experiência</small></button><button id="kiss" class="symbol" onclick="pick('😘')">😘<small>Beijo maravilhoso</small></button></div>
+    <div class="label">Nome do local</div><input id="mTitle" class="input" placeholder="Ex.: O nosso primeiro encontro">
+    <div class="label">Localização</div><input id="mPlace" class="input" placeholder="Ex.: Lisboa, Portugal"><div class="label">Nota (opcional)</div><input id="mNote" class="input" placeholder="Ex.: Um dia muito especial ❤️">
+    <div class="label">Fotografia (opcional)</div>
+    <label class="file-label">📷 Adicionar fotografia<input id="mPhoto" type="file" accept="image/*" onchange="previewPhoto(this)"></label>
+    <img id="photoPreview" class="preview">
+    <div id="mCoords" class="coords">📍 Ainda não escolheste um ponto no mapa</div>
+    <div class="coord-actions"><button class="btn secondary" onclick="useLastMapPoint()">Usar ponto escolhido</button><button class="btn secondary" onclick="locateForMarker()">Usar a minha localização</button></div>
+    <div class="label">Quem pode ver?</div>
+    <label class="choice"><input type="radio" name="privacy" value="Só eu" checked> 🔒 Só eu</label>
+    <label class="choice"><input type="radio" name="privacy" value="Pessoas autorizadas"> 👥 Pessoas autorizadas</label>
+    <button class="btn primary full" onclick="saveMarker()">Guardar</button>
+  </div></div>
+
+  <div id="markerModal" class="modal"><div class="sheet"><h2 id="mmTitle">❤️ Local</h2><div class="card"><div id="mmPlace" class="muted"></div><p id="mmNote"></p><img id="mmPhoto" class="marker-photo" style="display:none"><b id="mmPrivacy"></b></div><div class="small-actions"><button class="btn primary" onclick="editSelectedMarker()">✏️ Editar</button><button class="btn secondary" onclick="closeModal('markerModal')">Fechar</button><button class="btn secondary danger" onclick="deleteSelectedMarker()">Eliminar</button></div></div></div>
+
+  <div id="inviteModal" class="modal"><div class="sheet"><h2>Convidar pessoa <button class="back" style="float:right" onclick="closeModal('inviteModal')">×</button></h2><p class="muted">Envia um convite para partilhar os teus locais.</p><div class="label">Email da pessoa</div><input id="inviteEmail" class="input" placeholder="ana@email.com"><button class="btn primary full" onclick="invite()">Enviar convite</button></div></div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+window.__leafletReady = false;
+function loadLeafletFallback(){
+  return new Promise((resolve,reject)=>{
+    if(window.L){window.__leafletReady=true;resolve();return;}
+    const sources=[
+      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+      "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+    ];
+    let i=0;
+    const next=()=>{
+      if(i>=sources.length){reject(new Error("Leaflet indisponível"));return;}
+      const sc=document.createElement("script");sc.src=sources[i++];sc.onload=()=>{window.__leafletReady=!!window.L;resolve();};sc.onerror=next;document.head.appendChild(sc);
+    };next();
+  });
+}
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script>
+/*
+ * HAPPYSEXMAP — configuração da Versão 3.0
+ * ----------------------------------------
+ * Nesta versão, os dados continuam locais para preservar o funcionamento
+ * do protótipo. A arquitetura abaixo deixa explícito o ponto de integração
+ * para o backend real (autenticação, base de dados, fotos e partilha).
+ */
+const APP_CONFIG = {
+  appName: "Happysexmap",
+  version: "10.2",
+  backend: {
+    // V8: preenche estes dados com os valores do teu projeto Firebase.
+    // Enquanto estiverem vazios, a aplicação continua a funcionar em modo local.
+    enabled: true,
+    provider: "Firebase",
+    firebaseConfig: {
+      apiKey: "AIzaSyBDbC4FrYvCGIj8n3srP6FAk8Falas8vlI",
+      authDomain: "happysexmap.firebaseapp.com",
+      projectId: "happysexmap",
+      storageBucket: "happysexmap.firebasestorage.app",
+      messagingSenderId: "73332502264",
+      appId: "1:73332502264:web:5d4cd52d8d2ae754c3150d",
+      measurementId: "G-J5XG9TL10C"
+    }
+  },
+  maps: {
+    provider: "OpenStreetMap",
+    apiKey: ""
+  },
+  subscription: { freeMarkerLimit: 20, monthlyPrice: 1.99, yearlyPrice: 14.99 },
+  features: {
+    accounts: true,
+    privateMarkers: true,
+    authorizedSharing: true,
+    photos: true,
+    gps: true,
+    realMap: true,
+    cloudSync: true,
+    realtimeSharing: false
+  }
+};
+
+
+// ===== MAPA REAL + GPS — correção v6 =====
+let realMap = null;
+let userLocationMarker = null;
+let leafletMarkers = [];
+let streetLayer = null;
+let satelliteLayer = null;
+let currentMapLayer = 'street';
+
+async function initRealMap(){
+  const el=document.getElementById('realMap');
+  const status=document.getElementById('mapLoadStatus');
+  if(!el) return;
+  if(realMap){ realMap.invalidateSize(); renderRealMarkers(); return; }
+  if(typeof L==='undefined'){
+    if(status){status.style.display='flex';status.textContent='A carregar mapa…';}
+    try{ await loadLeafletFallback(); }
+    catch(e){ if(status){status.style.display='flex';status.innerHTML='Não foi possível carregar o mapa.<br><small>Confirma que tens ligação à Internet e volta a abrir a aplicação.</small>';} return; }
+  }
+  if(status) status.style.display='none';
+  realMap=L.map(el,{zoomControl:false,preferCanvas:true}).setView([39.5,-8.0],6);
+  // Mapa moderno + vista satélite alternável.
+  streetLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,
+    attribution:'&copy; OpenStreetMap contributors'
+  });
+  satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    maxZoom:19,
+    attribution:'Tiles &copy; Esri'
+  });
+  streetLayer.addTo(realMap);
+  // Zoom controlado pelos botões personalizados da Happysexmap (+ / −).
+  // Não adicionar o controlo nativo do Leaflet para evitar zoom duplicado.
+
+  realMap.on('click',e=>{
+    lastMapPoint={lat:e.latlng.lat,lng:e.latlng.lng};
+    openAdd();
+  });
+  setTimeout(()=>{
+    realMap.invalidateSize();
+    renderRealMarkers();
+  },150);
+}
+
+async function toggleMapLayer(){
+  await initRealMap();
+  if(!realMap || !streetLayer || !satelliteLayer) return;
+  const btn=document.getElementById('mapLayerToggle');
+  if(currentMapLayer==='street'){
+    if(realMap.hasLayer(streetLayer)) realMap.removeLayer(streetLayer);
+    satelliteLayer.addTo(realMap);
+    currentMapLayer='satellite';
+    if(btn){btn.textContent='🗺️';btn.title='Mudar para mapa';btn.setAttribute('aria-label','Mudar para mapa');}
+    toast('Vista satélite ativada 🛰️');
+  }else{
+    if(realMap.hasLayer(satelliteLayer)) realMap.removeLayer(satelliteLayer);
+    streetLayer.addTo(realMap);
+    currentMapLayer='street';
+    if(btn){btn.textContent='🛰️';btn.title='Mudar para satélite';btn.setAttribute('aria-label','Mudar para satélite');}
+    toast('Vista mapa ativada 🗺️');
+  }
+}
+
+function renderRealMarkers(){
+  if(!realMap) return;
+  leafletMarkers.forEach(m=>realMap.removeLayer(m));
+  leafletMarkers=[];
+  data.forEach(x=>{
+    if(!Number.isFinite(Number(x.lat)) || !Number.isFinite(Number(x.lng))) return;
+    const icon=L.divIcon({
+      className:'real-pin',
+      html:`<span style="font-size:28px;line-height:36px;filter:drop-shadow(0 2px 2px #fff)">${esc(x.s||'🥰')}</span>`,
+      iconSize:[40,40],
+      iconAnchor:[20,34]
+    });
+    const m=L.marker([Number(x.lat),Number(x.lng)],{icon}).addTo(realMap);
+    m.on('click',()=>openMarkerById(x.id));
+    leafletMarkers.push(m);
+  });
+}
+
+async function searchRealPlace(q){
+  q=(q||'').trim();
+  if(!q) return;
+  try{
+    toast('A procurar morada…');
+    const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q);
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-PT,pt;q=0.9'}});
+    if(!r.ok) throw new Error('search');
+    const a=await r.json();
+    if(!a.length){ toast('Morada não encontrada'); return; }
+    await initRealMap();
+    const lat=Number(a[0].lat),lng=Number(a[0].lon);
+    lastMapPoint={lat,lng};
+    realMap.setView([lat,lng],16,{animate:true});
+    clearMapSearch();
+    toast('Local encontrado 📍');
+  }catch(e){ toast('Não foi possível pesquisar a morada'); }
+}
+
+function openMarkerById(id){
+  const x=data.find(v=>String(v.id)===String(id));
+  if(!x) return;
+  selectedMarkerId=x.id;
+  document.getElementById('mmTitle').textContent=`${x.s||'❤️'} ${x.t||'Local'}`;
+  document.getElementById('mmPlace').textContent=x.p||'';
+  document.getElementById('mmNote').textContent=x.n||'';
+  document.getElementById('mmPrivacy').textContent=x.v||'Só eu';
+  const img=document.getElementById('mmPhoto');
+  if(x.photo){ img.src=x.photo; img.style.display='block'; } else { img.removeAttribute('src'); img.style.display='none'; }
+  document.getElementById('markerModal').classList.add('show');
+  if(realMap && Number.isFinite(Number(x.lat)) && Number.isFinite(Number(x.lng))) realMap.setView([Number(x.lat),Number(x.lng)],16);
+}
+
+function deleteSelectedMarker(){
+  if(!selectedMarkerId) return;
+  const deletedId=selectedMarkerId;
+  data=data.filter(x=>String(x.id)!==String(selectedMarkerId));
+  persist();
+  if(currentUser) deleteMarkerFromCloud(deletedId);
+  selectedMarkerId=null;
+  closeModal('markerModal');
+  renderRealMarkers();
+  renderPlaces();
+  toast('Marcador eliminado');
+}
+
+function geolocationErrorMessage(err){
+  if(!window.isSecureContext && location.protocol!=='file:') return 'O GPS precisa de HTTPS para funcionar neste navegador.';
+  if(location.protocol==='file:') return 'O navegador pode bloquear o GPS quando o ficheiro HTML é aberto diretamente. Para localização real, abre a app através de HTTPS/PWA.';
+  if(err && err.code===1) return 'Permissão de localização recusada. Ativa a Localização para este site nas definições do navegador.';
+  if(err && err.code===2) return 'O telemóvel não conseguiu determinar a posição. Confirma que a Localização/GPS está ligada.';
+  if(err && err.code===3) return 'A localização demorou demasiado. Tenta novamente num local com melhor sinal GPS.';
+  return 'Não foi possível obter a localização.';
+}
+
+function showUserPosition(pos, forMarker=false){
+  const lat=pos.coords.latitude,lng=pos.coords.longitude;
+  lastMapPoint={lat,lng};
+  initRealMap();
+  if(realMap){
+    realMap.setView([lat,lng],17,{animate:true});
+    if(userLocationMarker) realMap.removeLayer(userLocationMarker);
+    userLocationMarker=L.circleMarker([lat,lng],{radius:9,weight:3,fillOpacity:.8}).addTo(realMap);
+    userLocationMarker.bindTooltip('A tua localização').openTooltip();
+  }
+  if(forMarker){
+    document.getElementById('mCoords').textContent=`📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  }
+  toast(`Localização encontrada${pos.coords.accuracy ? ' (±'+Math.round(pos.coords.accuracy)+' m)' : ''} 📍`);
+}
+
+function backendStatus() {
+  return APP_CONFIG.backend.enabled
+    ? "Ligação ao servidor ativa"
+    : "Modo local — servidor ainda não ligado";
+}
+
+// ===== V8 — CONTAS + CLOUD =====
+let firebaseApp=null, auth=null, db=null, currentUser=null;
+
+function firebaseConfigured(){
+  const c=APP_CONFIG.backend.firebaseConfig||{};
+  return Boolean(c.apiKey && c.authDomain && c.projectId && c.appId);
+}
+
+function initCloud(){
+  if(!firebaseConfigured() || typeof firebase==='undefined'){
+    APP_CONFIG.backend.enabled=false;
+    updateOnlineUI();
+    return;
+  }
+  try{
+    firebaseApp=firebase.apps?.length ? firebase.app() : firebase.initializeApp(APP_CONFIG.backend.firebaseConfig);
+    auth=firebase.auth();
+    db=firebase.firestore();
+    APP_CONFIG.backend.enabled=true;
+    auth.onAuthStateChanged(async user=>{
+      currentUser=user||null;
+      updateOnlineUI();
+      if(user){
+        await loadCloudMarkers();
+        document.getElementById('profileName').textContent=user.displayName||user.email?.split('@')[0]||'Utilizador';
+        const emailEl=document.getElementById('profileEmail'); if(emailEl) emailEl.textContent=user.email||'';
+      }
+    });
+  }catch(e){
+    console.error(e); APP_CONFIG.backend.enabled=false; updateOnlineUI();
+  }
+}
+
+function updateOnlineUI(){
+  const on=Boolean(APP_CONFIG.backend.enabled && currentUser);
+  document.getElementById('onlineDot')?.classList.toggle('on',on);
+  const st=document.getElementById('onlineStatus'); if(st) st.textContent=on?'Sincronizado com a cloud':(firebaseConfigured()?'Firebase ligado — inicia sessão':'Modo local — falta configurar Firebase');
+  const badge=document.getElementById('onlineBadge'); if(badge) badge.textContent=on?'CLOUD':'LOCAL';
+}
+
+async function createOnlineAccount(){
+  const name=document.getElementById('name').value.trim();
+  const email=document.getElementById('signupEmail')?.value.trim();
+  const password=document.getElementById('password').value;
+  if(!firebaseConfigured()){ saveName(); toast('Conta local criada. Firebase ainda não configurado.'); return; }
+  if(!email || password.length<6){toast('Indica um email e uma palavra-passe com pelo menos 6 caracteres');return;}
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,password);
+    if(name) await cred.user.updateProfile({displayName:name});
+    currentUser=cred.user; updateOnlineUI();
+    await db.collection('users').doc(currentUser.uid).set({name:name||'',email:(email||'').toLowerCase(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    show('map'); toast('Conta criada e ligada à cloud ✓');
+    await syncNow();
+  }catch(e){toast('Não foi possível criar a conta: '+(e.message||'erro'));}
+}
+
+
+async function loginOnline(){
+  const email=document.getElementById('loginEmail')?.value.trim();
+  const password=document.getElementById('loginPassword')?.value||'';
+  if(!firebaseConfigured() || !auth){toast('Firebase ainda não configurado — usa o modo local');return;}
+  if(!email || !password){toast('Indica o email e a palavra-passe');return;}
+  try{
+    const cred=await auth.signInWithEmailAndPassword(email,password);
+    currentUser=cred.user;
+    updateOnlineUI();
+    await loadCloudMarkers();
+    show('map');
+    toast('Sessão iniciada ✓');
+  }catch(e){
+    toast('Email ou palavra-passe incorretos');
+    console.error(e);
+  }
+}
+
+async function resetPassword(){
+  const email=document.getElementById('loginEmail')?.value.trim();
+  if(!firebaseConfigured() || !auth){toast('Firebase ainda não configurado');return;}
+  if(!email){toast('Escreve primeiro o teu email');return;}
+  try{await auth.sendPasswordResetEmail(email);toast('Email de recuperação enviado ✉️');}
+  catch(e){toast('Não foi possível enviar o email');console.error(e);}
+}
+
+async function syncNow(){
+  if(!APP_CONFIG.backend.enabled || !currentUser || !db){toast('Modo local — configura o Firebase e inicia sessão');return;}
+  try{
+    const col=db.collection('users').doc(currentUser.uid).collection('markers');
+    const batch=db.batch();
+    data.forEach(x=>batch.set(col.doc(String(x.id)),x,{merge:true}));
+    await batch.commit();
+    await loadCloudMarkers();
+    toast('Sincronização concluída ☁️');
+  }catch(e){toast('Erro ao sincronizar'); console.error(e);}
+}
+
+async function loadCloudMarkers(){
+  if(!db || !currentUser) return;
+  try{
+    const snap=await db.collection('users').doc(currentUser.uid).collection('markers').get();
+    data=snap.docs.map(d=>d.data());
+    persist();
+    renderRealMarkers();
+    renderPlaces();
+  }catch(e){console.error(e); toast('Não foi possível carregar os locais da cloud');}
+}
+
+async function saveMarkerToCloud(item){
+  if(!db || !currentUser || !item) return;
+  try{
+    await db.collection('users').doc(currentUser.uid).collection('markers').doc(String(item.id)).set(item,{merge:true});
+  }catch(e){console.error(e); toast('Guardado no telemóvel, mas houve erro na cloud');}
+}
+
+async function deleteMarkerFromCloud(id){
+  if(!db || !currentUser || !id) return;
+  try{
+    await db.collection('users').doc(currentUser.uid).collection('markers').doc(String(id)).delete();
+  }catch(e){console.error(e); toast('Eliminado no telemóvel, mas houve erro na cloud');}
+}
+
+async function logoutOnline(){
+  if(!auth){toast('Firebase não está disponível');return;}
+  try{
+    await auth.signOut();
+    currentUser=null;
+    updateOnlineUI();
+    data=seed.map(x=>({...x}));
+    persist();
+    renderRealMarkers();
+    renderPlaces();
+    const emailEl=document.getElementById('profileEmail'); if(emailEl) emailEl.textContent='Modo local';
+    show('welcome');
+    toast('Sessão terminada ✓');
+  }catch(e){console.error(e);toast('Não foi possível terminar a sessão');}
+}
+
+const seed=[
+ {id:'seed1',s:'❤️',t:'O nosso primeiro encontro',p:'Lisboa',n:'Um dia muito especial ❤️',v:'Só eu',lat:38.7223,lng:-9.1393},
+ {id:'seed2',s:'🙂',t:'Férias',p:'Algarve',n:'Dias de descanso',v:'Só eu',lat:37.0179,lng:-7.9304},
+ {id:'seed3',s:'❤️',t:'Restaurante especial',p:'Porto',n:'Uma noite inesquecível',v:'Só eu',lat:41.1496,lng:-8.6109},
+ {id:'seed4',s:'❤️',t:'Viagem a Paris',p:'Paris',n:'A nossa viagem de 2026',v:'Pessoas autorizadas',lat:48.8566,lng:2.3522},
+ {id:'seed5',s:'🙂',t:'Passeio na serra',p:'Sintra',n:'Domingo perfeito',v:'Só eu',lat:38.8029,lng:-9.3817}
+];
+
+let data=JSON.parse(localStorage.getItem('Happysexmap_places')||'null')||seed;
+let symbol='🥰', pendingPhoto='', lastMapPoint=null, selectedMarkerId=null, editingMarkerId=null;
+// Migração visual: versões antigas usavam ❤️ e 🙂. Converte-os para os smiles atuais.
+let migratedLegacySymbols=false;
+data.forEach(x=>{
+  if(x.s==='❤️'){ x.s='🥰'; migratedLegacySymbols=true; }
+  if(x.s==='🙂'){ x.s='😊'; migratedLegacySymbols=true; }
+});
+if(migratedLegacySymbols) persist();
+
+
+const PLAN_KEY='Happysexmap_plan';
+function currentPlan(){return localStorage.getItem(PLAN_KEY)||'free';}
+function isPremium(){return currentPlan()==='premium';}
+function updatePlanUI(){
+  const premium=isPremium();
+  const b=document.getElementById('planBadge'),t=document.getElementById('planText');
+  if(b)b.textContent=premium?'PREMIUM':'FREE';
+  if(t)t.textContent=premium?'Premium — locais ilimitados':'Free — até '+APP_CONFIG.subscription.freeMarkerLimit+' locais';
+  const u=document.getElementById('upgradeBtn'); if(u)u.textContent=premium?'Premium ativo ✓':'Experimentar Premium';
+}
+function requirePremium(feature){ if(isPremium())return true; toast(feature+' é uma função Premium 👑'); show('premium'); return false; }
+function startPremium(){
+  localStorage.setItem(PLAN_KEY,'premium');
+  updatePlanUI();
+  toast('Premium de teste ativado ✓');
+  setTimeout(()=>show('profile'),700);
+}
+function restorePremium(){ toast('Ainda não existe uma compra real para restaurar nesta versão de teste.'); }
+
+function persist(){
+  localStorage.setItem('Happysexmap_places',JSON.stringify(data));
+}
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function show(id){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ const screen=document.getElementById(id);
+ if(!screen)return;
+ screen.classList.add('active');
+ if(id==='places')renderPlaces();
+ if(id==='share'){ if(!isPremium()){show('premium');return;} renderPeople(); }
+ if(id==='shared'){ renderSharedMaps(); }
+ if(id==='map')setTimeout(()=>{
+   initRealMap();
+   renderRealMarkers();
+   if(realMap) realMap.invalidateSize();
+ },120);
+}
+function openAdd(){
+ editingMarkerId=null;
+ pendingPhoto='';
+ symbol='🥰'; pick('🥰');
+ document.querySelector('#addModal h2').childNodes[0].nodeValue='Adicionar marcador ';
+ document.querySelector('#addModal .btn.primary.full').textContent='Guardar';
+ lastMapPoint=lastMapPoint||null;
+ document.getElementById('mCoords').textContent=lastMapPoint
+   ? `📍 ${lastMapPoint.lat.toFixed(5)}, ${lastMapPoint.lng.toFixed(5)}`
+   : '📍 Ainda não escolheste um ponto no mapa';
+ document.getElementById('addModal').classList.add('show');
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function saveMarker(){
+   const title=document.getElementById('mTitle').value.trim();
+   const place=document.getElementById('mPlace').value.trim();
+   const note=document.getElementById('mNote').value.trim();
+   const privacy=document.querySelector('input[name="privacy"]:checked')?.value || 'Só eu';
+   if(privacy==='Pessoas autorizadas' && !isPremium()){ requirePremium('Partilha com pessoas autorizadas'); return; }
+   if(!lastMapPoint){toast('Toca primeiro num ponto do mapa');return;}
+   let item;
+   if(editingMarkerId){
+     item=data.find(x=>String(x.id)===String(editingMarkerId));
+     if(!item){toast('Marcador não encontrado');return;}
+     item.s=symbol||'🥰';
+     item.t=title||'Local marcado';
+     item.p=place||`${lastMapPoint.lat.toFixed(5)}, ${lastMapPoint.lng.toFixed(5)}`;
+     item.n=note; item.v=privacy;
+     item.lat=Number(lastMapPoint.lat); item.lng=Number(lastMapPoint.lng);
+     item.photo=pendingPhoto||'';
+   }else{
+     if(!isPremium() && data.length>=APP_CONFIG.subscription.freeMarkerLimit){
+       closeModal('addModal');
+       toast('Atingiste o limite de '+APP_CONFIG.subscription.freeMarkerLimit+' locais do plano Free 👑');
+       show('premium');
+       return;
+     }
+     item={
+       id:'m'+Date.now(), s:symbol||'🥰', t:title||'Local marcado', p:place||`${lastMapPoint.lat.toFixed(5)}, ${lastMapPoint.lng.toFixed(5)}`,
+       n:note, v:privacy, lat:Number(lastMapPoint.lat), lng:Number(lastMapPoint.lng), photo:pendingPhoto||''
+     };
+     data.unshift(item);
+   }
+   const wasEditing=!!editingMarkerId;
+   editingMarkerId=null;
+   persist();
+   if(currentUser) saveMarkerToCloud(item);
+   closeModal('addModal');
+   document.getElementById('mTitle').value='';
+   document.getElementById('mPlace').value='';
+   document.getElementById('mNote').value='';
+   document.getElementById('mPhoto').value='';
+   const preview=document.getElementById('photoPreview'); preview.removeAttribute('src'); preview.style.display='none';
+   pendingPhoto='';
+   renderRealMarkers();
+   renderPlaces();
+   if(realMap) realMap.setView([item.lat,item.lng],16,{animate:true});
+   toast(wasEditing?'Marcador atualizado ✓':'Marcador guardado ❤️');
+}
+
+function editSelectedMarker(){
+  const x=data.find(v=>String(v.id)===String(selectedMarkerId));
+  if(!x) return;
+  editingMarkerId=x.id;
+  symbol=x.s||'❤️'; pick(symbol);
+  document.getElementById('mTitle').value=x.t||'';
+  document.getElementById('mPlace').value=x.p||'';
+  document.getElementById('mNote').value=x.n||'';
+  pendingPhoto=x.photo||'';
+  lastMapPoint={lat:Number(x.lat),lng:Number(x.lng)};
+  document.getElementById('mCoords').textContent=`📍 ${lastMapPoint.lat.toFixed(5)}, ${lastMapPoint.lng.toFixed(5)}`;
+  const privacy=document.querySelector(`input[name="privacy"][value="${CSS.escape(x.v||'Só eu')}"]`);
+  if(privacy) privacy.checked=true;
+  const preview=document.getElementById('photoPreview');
+  if(pendingPhoto){preview.src=pendingPhoto;preview.style.display='block';}else{preview.removeAttribute('src');preview.style.display='none';}
+  document.getElementById('mPhoto').value='';
+  document.querySelector('#addModal h2').childNodes[0].nodeValue='Editar marcador ';
+  document.querySelector('#addModal .btn.primary.full').textContent='Guardar alterações';
+  closeModal('markerModal');
+  document.getElementById('addModal').classList.add('show');
+}
+function previewPhoto(input){
+  if(!isPremium()){ input.value=''; requirePremium('Fotografias nos locais'); return; }
+  const file=input.files && input.files[0];
+  if(!file){pendingPhoto='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{ pendingPhoto=reader.result; const img=document.getElementById('photoPreview'); img.src=pendingPhoto; img.style.display='block'; };
+  reader.readAsDataURL(file);
+}
+function pick(s){
+ symbol=s;
+ ['art','good','bad','kiss'].forEach(id=>document.getElementById(id)?.classList.remove('selected'));
+ const ids={'🥰':'art','😊':'good','😖':'bad','😘':'kiss'};
+ document.getElementById(ids[s]||'art')?.classList.add('selected');
+}
+function mapPointFromEvent(ev){
+ const map=document.querySelector('#map .map'), r=map.getBoundingClientRect();
+ const x=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
+ const y=Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height));
+ /* Prototype coordinate transform: the map canvas represents Portugal + nearby Europe. */
+ const lng=-10.0+x*13.0, lat=51.0-y*17.0;
+ return {lat,lng,x,y};
+}
+function useLastMapPoint(){
+ if(!lastMapPoint){toast('Toca primeiro num ponto do mapa');return;}
+ document.getElementById('mCoords').textContent=`📍 ${lastMapPoint.lat.toFixed(5)}, ${lastMapPoint.lng.toFixed(5)}`;
+ toast('Ponto do mapa selecionado 📍');
+}
+function searchMap(q){
+  const box=document.getElementById('searchResults');
+  if(!q.trim()){box.classList.remove('show');return}
+  const a=data.filter(x=>(x.t+' '+x.p+' '+x.n).toLowerCase().includes(q.toLowerCase())).slice(0,4);
+  box.innerHTML=a.map(x=>`<div class="search-result" onclick="openMarkerById('${x.id}');clearMapSearch()"><b>${esc(x.s)} ${esc(x.t)}</b><small>${esc(x.p)}</small></div>`).join('');
+  if(a.length<4) box.innerHTML += `<div class="search-result" onclick="searchRealPlace(document.getElementById('mapSearch').value)"><b>📍 Pesquisar morada</b><small>Procurar no mapa</small></div>`;
+  box.classList.add('show');
+}
+function clearMapSearch(){document.getElementById('mapSearch').value='';document.getElementById('searchResults').classList.remove('show');}
+
+async function requestLocation(forMarker=false){
+   await initRealMap();
+   if(!navigator.geolocation){ toast('Este navegador não disponibiliza geolocalização.'); return; }
+   if(!window.isSecureContext && location.protocol!=='file:'){
+     toast('Para usar o GPS, abre a Happysexmap através de HTTPS.'); return;
+   }
+   toast('A obter a tua localização…');
+   const success=pos=>showUserPosition(pos,forMarker);
+   const failure=err=>{
+     console.warn('Erro de geolocalização:',err);
+     if(err && err.code===1) toast('Localização bloqueada. Autoriza a localização nas permissões do navegador/app.');
+     else if(location.protocol==='file:') toast('O GPS foi bloqueado ao abrir o HTML diretamente. Usa a versão HTTPS/PWA da Happysexmap.');
+     else toast(geolocationErrorMessage(err));
+   };
+   navigator.geolocation.getCurrentPosition(success,err=>{
+     if(err && (err.code===2 || err.code===3)){
+       navigator.geolocation.getCurrentPosition(success,failure,{enableHighAccuracy:false,timeout:15000,maximumAge:60000});
+     }else failure(err);
+   },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+function locateUser(){ requestLocation(false); }
+function locateForMarker(){ requestLocation(true); }
+
+function zoomMap(d){
+  if(!realMap) return;
+  d>0 ? realMap.zoomIn() : realMap.zoomOut();
+}
+
+function renderCustomPins(){
+  const layer=document.getElementById('customPins');
+  if(layer) layer.innerHTML='';
+}
+
+function renderPlaces(q=''){
+ const counts={'🥰':0,'😊':0,'😖':0,'😘':0};
+ data.forEach(x=>{ if(Object.prototype.hasOwnProperty.call(counts,x.s)) counts[x.s]++; });
+ const summary=document.getElementById('placesSummary');
+ if(summary){
+   summary.innerHTML=`<div class="title" style="font-size:16px;margin-bottom:10px">${data.length} ${data.length===1?'local':'locais'}</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:13px"><div>🥰 <b>${counts['🥰']}</b> Obra de arte</div><div>😊 <b>${counts['😊']}</b> Boa experiência</div><div>😖 <b>${counts['😖']}</b> Má experiência</div><div>😘 <b>${counts['😘']}</b> Beijo maravilhoso</div></div>`;
+ }
+ let list=data.filter(x=>(x.t+' '+x.p+' '+x.n).toLowerCase().includes(q.toLowerCase()));
+ document.getElementById('placesList').innerHTML=list.map(x=>`<div class="card" onclick="openMarkerById('${x.id}')"><div class="row"><span style="font-size:28px">${esc(x.s)}</span><div class="grow"><div class="title">${esc(x.t)}</div><div class="muted">${esc(x.p)}</div></div>›</div></div>`).join('')||'<div class="empty">Ainda não há locais com esse nome.</div>';
+}
+function filterPlaces(q){renderPlaces(q)}
+function openInvite(){if(!requirePremium('Partilha'))return;document.getElementById('inviteModal').classList.add('show')}
+async function invite(){
+ const e=document.getElementById('inviteEmail').value.trim().toLowerCase();
+ if(!e){toast('Escreve um email primeiro');return}
+ if(APP_CONFIG.backend.enabled && currentUser && db){
+   if(e===(currentUser.email||'').toLowerCase()){toast('Não podes convidar a tua própria conta');return;}
+   try{
+     await db.collection('invitations').add({
+       fromUid:currentUser.uid,
+       fromEmail:(currentUser.email||'').toLowerCase(),
+       fromName:currentUser.displayName||currentUser.email?.split('@')[0]||'Utilizador',
+       toEmail:e,
+       status:'pending',
+       createdAt:firebase.firestore.FieldValue.serverTimestamp()
+     });
+     closeModal('inviteModal');document.getElementById('inviteEmail').value='';
+     await renderPeople(); toast('Convite enviado ✉️'); return;
+   }catch(err){console.error(err);toast('Não foi possível enviar o convite');return;}
+ }
+ let ps=JSON.parse(localStorage.getItem('meumapa_people')||'[]');
+ ps.unshift({name:e.split('@')[0],email:e,places:0,status:'local'});
+ localStorage.setItem('meumapa_people',JSON.stringify(ps));
+ closeModal('inviteModal');document.getElementById('inviteEmail').value='';renderPeople();toast('Convite guardado no modo local ✉️');
+}
+async function acceptInvite(id,fromUid,fromEmail,fromName){
+ if(!currentUser||!db)return;
+ try{
+   await db.collection('invitations').doc(id).update({
+     status:'accepted',
+     acceptedAt:firebase.firestore.FieldValue.serverTimestamp(),
+     toUid:currentUser.uid
+   });
+   await db.collection('users').doc(currentUser.uid).collection('sharedWithMe').doc(fromUid).set({
+     uid:fromUid,email:fromEmail||'',name:fromName||'Utilizador',invitationId:id,
+     createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   },{merge:true});
+   await renderPeople();
+   toast('Convite aceite ✓');
+ }catch(err){console.error(err);toast('Não foi possível aceitar o convite');}
+}
+async function removeAuthorizedPerson(invitationId,toUid,toEmail){
+ if(!currentUser||!db)return;
+ const label=toEmail||'esta pessoa';
+ if(!confirm('Remover o acesso de '+label+' aos teus locais partilhados?')) return;
+ try{
+   if(toUid){
+     await db.collection('users').doc(currentUser.uid).collection('authorized').doc(toUid).delete();
+   }
+   if(invitationId){
+     await db.collection('invitations').doc(invitationId).delete();
+   }
+   await renderPeople();
+   toast('Acesso removido ✓');
+ }catch(err){
+   console.error(err);
+   toast('Não foi possível remover o acesso');
+ }
+}
+
+async function renderPeople(){
+ const people=document.getElementById('people'), incoming=document.getElementById('incomingInvites');
+ if(APP_CONFIG.backend.enabled && currentUser && db){
+   try{
+     const email=(currentUser.email||'').toLowerCase();
+     const [sentSnap,invSnap]=await Promise.all([
+       db.collection('invitations').where('fromUid','==',currentUser.uid).where('status','==','accepted').get(),
+       db.collection('invitations').where('toEmail','==',email).where('status','==','pending').get()
+     ]);
+     const ps=sentSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+     // V9.7 — o dono do mapa confirma no seu próprio espaço quem ficou autorizado.
+     // Isto cria users/{dono}/authorized/{uid_da_pessoa} apenas depois de o convite ter sido aceite.
+     const authorizedCol=db.collection('users').doc(currentUser.uid).collection('authorized');
+     const grants=ps.filter(x=>x.toUid).map(x=>
+       authorizedCol.doc(x.toUid).set({
+         uid:x.toUid,
+         email:(x.toEmail||'').toLowerCase(),
+         invitationId:x.invitationId||'',
+         authorizedAt:firebase.firestore.FieldValue.serverTimestamp()
+       },{merge:true})
+     );
+     if(grants.length) await Promise.all(grants);
+
+     people.innerHTML='<div class="label">Pessoas autorizadas</div>'+ (ps.map(x=>`<div class="card"><div class="row"><div class="avatar">${esc((x.toEmail||'?')[0].toUpperCase())}</div><div class="grow"><div class="title">${esc(x.toEmail||'Utilizador')}</div><div class="muted">Autorizado a ver locais partilhados</div></div><span class="badge">CLOUD</span></div><button class="btn secondary full danger" onclick="removeAuthorizedPerson('${x.id}','${x.toUid||''}','${esc(x.toEmail||'')}')">Remover acesso</button></div>`).join('')||'<div class="muted" style="margin:8px 0 14px">Ainda não autorizaste ninguém.</div>');
+     const inv=invSnap.docs.map(d=>({id:d.id,...d.data()}));
+     incoming.innerHTML=inv.length?'<div class="label">Convites recebidos</div>'+inv.map(x=>`<div class="card"><div class="row"><div class="avatar">${esc((x.fromName||x.fromEmail||'?')[0].toUpperCase())}</div><div class="grow"><div class="title">${esc(x.fromName||x.fromEmail)}</div><div class="muted">Quer partilhar o mapa contigo</div></div></div><button class="btn primary full" onclick="acceptInvite('${x.id}','${x.fromUid}','${esc(x.fromEmail||'')}','${esc(x.fromName||'')}')">Aceitar</button></div>`).join(''):'';
+     return;
+   }catch(err){console.error(err); toast('Não foi possível carregar as partilhas');}
+ }
+ if(incoming)incoming.innerHTML='';
+ let ps=JSON.parse(localStorage.getItem('meumapa_people')||'null')||[];
+ people.innerHTML=ps.map(x=>`<div class="card"><div class="row"><div class="avatar">${esc(x.name[0]?.toUpperCase()||'?')}</div><div class="grow"><div class="title">${esc(x.name)}</div><div class="muted">Convite guardado localmente</div></div><span class="badge">LOCAL</span></div></div>`).join('')||'<div class="muted">Ainda não adicionaste ninguém.</div>';
+}
+async function renderSharedMaps(){
+ const box=document.getElementById('sharedMapsList');
+ if(!box)return;
+ if(!currentUser||!db){box.innerHTML='<div class="empty">Inicia sessão para veres mapas partilhados contigo.</div>';return;}
+ box.innerHTML='<div class="empty">A carregar mapas partilhados…</div>';
+ try{
+   const email=(currentUser.email||'').toLowerCase();
+   const invSnap=await db.collection('invitations').where('toEmail','==',email).where('status','==','accepted').get();
+   if(invSnap.empty){box.innerHTML='<div class="empty">Ainda não tens mapas partilhados contigo.</div>';return;}
+   let html='';
+   for(const d of invSnap.docs){
+     const inv=d.data();
+     try{
+       // V9.8: lê a coleção do dono e filtra no cliente. Isto evita falhas de query
+       // em partilhas já autorizadas e mantém apenas os locais marcados para partilha.
+       const ms=await db.collection('users').doc(inv.fromUid).collection('markers')
+         .where('v','==','Pessoas autorizadas').get();
+       const markers=ms.docs.map(x=>x.data());
+       html+=`<div class="card"><div class="title">${esc(inv.fromName||inv.fromEmail||'Mapa partilhado')}</div><div class="muted">${markers.length} ${markers.length===1?'local partilhado':'locais partilhados'}</div></div>`;
+       html+=markers.map(x=>{
+         const payload=encodeURIComponent(JSON.stringify(x));
+         return `<div class="card" style="cursor:pointer" onclick="openSharedMarker('${payload}')"><div class="row"><span style="font-size:28px">${esc(x.s||'🥰')}</span><div class="grow"><div class="title">${esc(x.t||'Local')}</div><div class="muted">${esc(x.p||'')}</div></div><span style="font-size:20px">›</span></div></div>`;
+       }).join('');
+     }catch(err){console.error(err);html+='<div class="muted">Não foi possível abrir este mapa partilhado.</div>';}
+   }
+   box.innerHTML=html||'<div class="empty">Ainda não há locais partilhados contigo.</div>';
+ }catch(err){console.error(err);box.innerHTML='<div class="empty">Não foi possível carregar os mapas partilhados.</div>';}
+}
+async function openSharedMarker(payload){
+  try{
+    const x=JSON.parse(decodeURIComponent(payload));
+    const lat=Number(x.lat), lng=Number(x.lng);
+    if(!Number.isFinite(lat) || !Number.isFinite(lng)){
+      toast('Este local partilhado não tem coordenadas válidas');
+      return;
+    }
+    show('map');
+    await initRealMap();
+    setTimeout(()=>{
+      if(!realMap) return;
+      realMap.setView([lat,lng],16,{animate:true});
+      const icon=L.divIcon({
+        className:'real-pin',
+        html:`<span style="font-size:30px;line-height:38px;filter:drop-shadow(0 2px 2px #fff)">${esc(x.s||'🥰')}</span>`,
+        iconSize:[42,42],
+        iconAnchor:[21,36]
+      });
+      const marker=L.marker([lat,lng],{icon}).addTo(realMap);
+      marker.bindPopup(`<b>${esc(x.s||'🥰')} ${esc(x.t||'Local')}</b><br>${esc(x.p||'')}${x.n?'<br><small>'+esc(x.n)+'</small>':''}`).openPopup();
+      setTimeout(()=>{ try{ realMap.removeLayer(marker); }catch(e){} },30000);
+    },180);
+  }catch(e){
+    console.error(e);
+    toast('Não foi possível abrir este local no mapa');
+  }
+}
+
+function socialLoginUnavailable(provider){
+  toast('Login com '+provider+' será ativado quando a autenticação online estiver configurada.');
+}
+function saveName(){
+ let n=document.getElementById('name').value.trim();
+ if(n){localStorage.setItem('meumapa_name',n);document.getElementById('profileName').textContent=n}
+ show('map');toast('Perfil local criado ✨');
+}
+function toast(t){let el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>el.classList.remove('show'),2200);}
+function resetDemoData(){
+ if(confirm('Apagar todos os locais e voltar aos dados de demonstração?')){
+   data=seed.map(x=>({...x}));persist();renderPlaces();renderRealMarkers();renderCustomPins();toast('Dados de demonstração restaurados');
+ }
+}
+(function(){let n=localStorage.getItem('meumapa_name');if(n)document.getElementById('profileName').textContent=n})();
+renderCustomPins();
+setTimeout(()=>{if(document.getElementById('map').classList.contains('active')) initRealMap();},100); setTimeout(initCloud,150); updateOnlineUI(); updatePlanUI();
+</script>
+</body>
+</html>
