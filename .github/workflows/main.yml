@@ -1,0 +1,32 @@
+
+name: Testes Happysexmap
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter projeto
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verificar ficheiros
+        run: |
+          echo "A verificar Happysexmap..."
+          ls -la
+
+      - name: Verificar sintaxe JavaScript
+        run: |
+          find . -type f -name "*.js" \
+            -not -path "./node_modules/*" \
+            -not -path "./.git/*" \
+            -exec node --check {} \;
